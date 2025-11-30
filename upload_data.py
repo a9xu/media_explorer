@@ -1,6 +1,7 @@
 import mysql.connector
 import pandas as pd
 import ast
+import re
 
 # -----------------------------
 # DB CONNECTION CONFIG
@@ -83,6 +84,21 @@ def get_or_create_author(conn, name):
     return auth_id
 
 
+def get_or_create_creator(conn, name):
+    cur = conn.cursor()
+    cur.execute("SELECT id FROM creators WHERE name = %s", (name,))
+    row = cur.fetchone()
+    if row:
+        cur.close()
+        return row[0]
+
+    cur.execute("INSERT INTO creators (name) VALUES (%s)", (name,))
+    conn.commit()
+    creator_id = cur.lastrowid
+    cur.close()
+    return creator_id
+
+
 def get_or_create_book(conn, title, author_id, year=None):
     cur = conn.cursor()
     cur.execute(
@@ -104,7 +120,7 @@ def get_or_create_book(conn, title, author_id, year=None):
     return book_id
 
 
-def get_or_create_movie(conn, title, year=None, imdb_rating=None):
+def get_or_create_movie(conn, title, year=None, imdb_rating=None, director_id=None):
     cur = conn.cursor()
     cur.execute(
         "SELECT id FROM movies WHERE title = %s AND (year = %s OR (%s IS NULL AND year IS NULL))",
@@ -117,7 +133,7 @@ def get_or_create_movie(conn, title, year=None, imdb_rating=None):
 
     cur.execute(
         "INSERT INTO movies (title, year, imdb_rating, director_id) VALUES (%s, %s, %s, %s)",
-        (title, year, imdb_rating, None),  # no director info in CSV
+        (title, year, imdb_rating, director_id),
     )
     conn.commit()
     movie_id = cur.lastrowid
@@ -261,20 +277,58 @@ def load_songs(song_csv, limit=20):
 
 
 # -----------------------------
-# LOAD MOVIES (tmdb_5000_movies.csv)
+# LOAD MOVIES (tmdb_5000_movies.csv + tmdb_5000_credits.csv)
 # -----------------------------
-def load_movies(movies_csv, limit=20):
-    df = pd.read_csv(movies_csv, nrows=limit)
+def load_movies(movies_csv, credits_csv, limit=20):
+    movies_df = pd.read_csv(movies_csv, nrows=limit)
+    # Handle BOM and encoding issues in credits CSV
+    credits_df = pd.read_csv(credits_csv, encoding="utf-8-sig")
+
+    # Create a lookup dictionary for credits by movie_id
+    credits_lookup = {}
+    for _, cred_row in credits_df.iterrows():
+        movie_id = cred_row.get("movie_id")
+        if pd.notna(movie_id):
+            try:
+                # Try to convert to int, skip if it fails
+                movie_id_int = int(
+                    float(movie_id)
+                )  # Use float first to handle numeric strings
+                credits_lookup[movie_id_int] = cred_row
+            except (ValueError, TypeError):
+                # Skip rows where movie_id can't be converted to int
+                continue
+
     conn = get_connection()
 
-    for _, row in df.iterrows():
+    for _, row in movies_df.iterrows():
         title = str(row["title"])
+        movie_id_tmdb = row.get("id")
+
+        # Extract year from release_date (format: MM/DD/YYYY or YYYY-MM-DD)
         release_date = row.get("release_date", None)
         year = None
-        if isinstance(release_date, str) and len(release_date) >= 4:
+        if (
+            pd.notna(release_date)
+            and isinstance(release_date, str)
+            and release_date.strip()
+        ):
             try:
-                year = int(release_date[:4])
-            except Exception:
+                # Try to parse different date formats
+                if "/" in release_date:
+                    # Format: MM/DD/YYYY
+                    parts = release_date.split("/")
+                    if len(parts) >= 3:
+                        year = int(parts[2])
+                elif "-" in release_date:
+                    # Format: YYYY-MM-DD
+                    year = int(release_date.split("-")[0])
+                else:
+                    # Try to extract first 4 digits if it's a different format
+                    match = re.search(r"\d{4}", release_date)
+                    if match:
+                        year = int(match.group())
+            except (ValueError, IndexError, AttributeError):
                 year = None
 
         vote_avg = None
@@ -284,7 +338,27 @@ def load_movies(movies_csv, limit=20):
             except Exception:
                 vote_avg = None
 
-        movie_id = get_or_create_movie(conn, title, year, vote_avg)
+        # Extract director from credits CSV
+        director_id = None
+        if pd.notna(movie_id_tmdb) and int(movie_id_tmdb) in credits_lookup:
+            cred_row = credits_lookup[int(movie_id_tmdb)]
+            crew_raw = cred_row.get("crew", "")
+
+            if isinstance(crew_raw, str) and crew_raw.strip():
+                try:
+                    # crew is string like: "[{"job": "Director", "name": "James Cameron"}, ...]"
+                    crew_list = ast.literal_eval(crew_raw)
+                    for crew_member in crew_list:
+                        if crew_member.get("job") == "Director":
+                            director_name = crew_member.get("name")
+                            if director_name:
+                                director_id = get_or_create_creator(conn, director_name)
+                                break  # Take the first director found
+                except Exception:
+                    # if parse fails, just skip director for this movie
+                    pass
+
+        movie_id = get_or_create_movie(conn, title, year, vote_avg, director_id)
         item_id = get_or_create_item(conn, "movie", movie_id)
 
         # Parse genres JSON-like field
@@ -307,7 +381,7 @@ def load_movies(movies_csv, limit=20):
             add_rating(conn, item_id, "tmdb_vote_average", vote_avg)
 
     conn.close()
-    print(f"Inserted up to {limit} movies (with items, genres, ratings).")
+    print(f"Inserted up to {limit} movies (with directors, items, genres, ratings).")
 
 
 # -----------------------------
@@ -366,6 +440,7 @@ if __name__ == "__main__":
     BOOKS_CSV = "csvs/Books.csv"
     SONG_CSV = "csvs/song.csv"
     MOVIES_CSV = "csvs/tmdb_5000_movies.csv"
+    CREDITS_CSV = "csvs/tmdb_5000_credits.csv"
     RATINGS_CSV = "csvs/Ratings.csv"
 
     # How many rows of each to insert
@@ -373,7 +448,7 @@ if __name__ == "__main__":
 
     load_books(BOOKS_CSV, limit=N)
     load_songs(SONG_CSV, limit=N)
-    load_movies(MOVIES_CSV, limit=N)
+    load_movies(MOVIES_CSV, CREDITS_CSV, limit=N)
     load_book_ratings(RATINGS_CSV, BOOKS_CSV, limit=N)
 
     print("✅ Done inserting sample data into your schema.")

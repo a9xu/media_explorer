@@ -3,16 +3,18 @@ import mysql.connector
 
 DB_CONFIG = {
     "host": "localhost",
-    "user": "workbench",
-    "password": "StrongPW!123",
-    "database": "media_explorer",
+    "user": "root",
+    "password": "Mysql@2005",
+    "database": "team_project",
 }
+
 
 def get_connection():
     return mysql.connector.connect(**DB_CONFIG)
 
 
 app = Flask(__name__)
+
 
 @app.route("/")
 def index():
@@ -103,7 +105,9 @@ def edit_movie(movie_id):
         conn.close()
         return redirect(url_for("list_movies"))
 
-    cur.execute("SELECT id, title, year, imdb_rating FROM movies WHERE id = %s", (movie_id,))
+    cur.execute(
+        "SELECT id, title, year, imdb_rating FROM movies WHERE id = %s", (movie_id,)
+    )
     movie = cur.fetchone()
     cur.close()
     conn.close()
@@ -112,6 +116,7 @@ def edit_movie(movie_id):
         return "Movie not found", 404
 
     return render_template("movie_form.html", movie=movie)
+
 
 @app.route("/movies/<int:movie_id>/delete", methods=["POST"])
 def delete_movie(movie_id):
