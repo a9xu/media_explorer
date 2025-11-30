@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+<head>
+    <title>Ultimate Media Explorer</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        nav a { margin-right: 10px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 15px; }
+        th, td { border: 1px solid #ccc; padding: 6px 8px; }
+        th { background: #eee; }
+        form.inline { display: inline; }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="{{ url_for('index') }}">Home</a>
+        <a href="{{ url_for('list_movies') }}">Movies</a>
+        <!-- later: add links for books, songs, etc. -->
+    </nav>
+    <hr>
+    {% block content %}{% endblock %}
+</body>
+</html>
