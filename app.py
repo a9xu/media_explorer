@@ -1,11 +1,12 @@
 from flask import Flask, render_template, request, redirect, url_for
 import mysql.connector
+import os
 
 DB_CONFIG = {
     "host": "localhost",
-    "user": "root",
-    "password": "Mysql@2005",
-    "database": "team_project",
+    "user": os.environ.get("DB_USER"),
+    "password": os.environ.get("DB_PASSWORD"),
+    "database": os.environ.get("DB_DATABASE"),
 }
 
 
