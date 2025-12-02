@@ -1,0 +1,42 @@
+{% extends "base.html" %} {% block content %}
+<h2>{{ 'Edit Book' if book else 'Add New Book' }}</h2>
+
+<form method="post">
+  <p>
+    <label
+      >Title:<br />
+      <input
+        type="text"
+        name="title"
+        required
+        value="{{ book.title if book else '' }}"
+      />
+    </label>
+  </p>
+  <p>
+    <label
+      >Year:<br />
+      <input
+        type="number"
+        name="year"
+        value="{{ book.year if book and book.year is not none else '' }}"
+      />
+    </label>
+  </p>
+  <p>
+    <label
+      >Avg Rating:<br />
+      <input
+        type="number"
+        step="0.01"
+        name="avg_rating"
+        value="{{ book.avg_rating if book and book.avg_rating is not none else '' }}"
+      />
+    </label>
+  </p>
+  <p>
+    <button type="submit">Save</button>
+    <a href="{{ url_for('list_books') }}">Cancel</a>
+  </p>
+</form>
+{% endblock %}

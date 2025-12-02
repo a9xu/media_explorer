@@ -1,0 +1,41 @@
+{% extends "base.html" %} {% block content %}
+<h2>{{ 'Edit Song' if song else 'Add New Song' }}</h2>
+
+<form method="post">
+  <p>
+    <label
+      >Title:<br />
+      <input
+        type="text"
+        name="title"
+        required
+        value="{{ song.title if song else '' }}"
+      />
+    </label>
+  </p>
+  <p>
+    <label
+      >Year:<br />
+      <input
+        type="number"
+        name="year"
+        value="{{ song.year if song and song.year is not none else '' }}"
+      />
+    </label>
+  </p>
+  <p>
+    <label
+      >Spotify Popularity:<br />
+      <input
+        type="number"
+        name="spotify_popularity"
+        value="{{ song.spotify_popularity if song and song.spotify_popularity is not none else '' }}"
+      />
+    </label>
+  </p>
+  <p>
+    <button type="submit">Save</button>
+    <a href="{{ url_for('list_songs') }}">Cancel</a>
+  </p>
+</form>
+{% endblock %}

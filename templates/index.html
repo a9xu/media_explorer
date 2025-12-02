@@ -1,8 +1,10 @@
-{% extends "base.html" %}
-{% block content %}
+{% extends "base.html" %} {% block content %}
 <h1>Ultimate Media Explorer</h1>
 <p>Simple Flask GUI for browsing and managing movies, books, and songs.</p>
 <ul>
-    <li><a href="{{ url_for('list_movies') }}">View Movies</a></li>
+  <li><a href="{{ url_for('list_movies') }}">View Movies</a></li>
+  <li><a href="{{ url_for('list_tv_shows') }}">View TV Shows</a></li>
+  <li><a href="{{ url_for('list_songs') }}">View Songs</a></li>
+  <li><a href="{{ url_for('list_books') }}">View Books</a></li>
 </ul>
 {% endblock %}
