@@ -105,4 +105,59 @@ CREATE TABLE ratings (
     FOREIGN KEY (item_id) REFERENCES items(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- ============================================
+-- AUTHENTICATION TABLES
+-- ============================================
+
+CREATE TABLE app_users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE roles (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE permissions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+CREATE TABLE sessions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    started_at TIMESTAMP NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES app_users(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE role_permissions (
+    role_id INT NOT NULL,
+    permission_id INT NOT NULL,
+    FOREIGN KEY (role_id) REFERENCES roles(id),
+    FOREIGN KEY (permission_id) REFERENCES permissions(id)
+    PRIMARY KEY (role_id, permission_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE user_roles (
+    user_id INT NOT NULL,
+    role_id INT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES app_users(id),
+    FOREIGN KEY (role_id) REFERENCES roles(id)
+    PRIMARY KEY (user_id, role_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE user_preferences (
+    user_id INT NOT NULL,
+    genre_id INT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES app_users(id),
+    FOREIGN KEY (genre_id) REFERENCES genres(id)
+    PRIMARY KEY (user_id, genre_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 SET FOREIGN_KEY_CHECKS = 1;
