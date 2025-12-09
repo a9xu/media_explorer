@@ -8,14 +8,12 @@ The app lets users search movies, songs, and books, compare them side-by-side, a
 
 ## ER-Diagram
 
-![Checkpoint 1 Er_diagram](CS3620%20Team%20Project.png)
-![Checkpoint 2 Er_diagram](ERD2.png)
+![Er_diagram](CS3620%20Team%20Project.png)
 
 ## Recording
 
-![Checkpoint 1Recording](Recording.mp4)
-![Checkpoint 2 Recording](C2R.mp4)
-![Recording](Recording.mp4)
+
+![Recording](final_recording.mp4)
 
 ## Authentication & Permissions Setup
 

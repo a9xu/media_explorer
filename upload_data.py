@@ -8,8 +8,8 @@ import re
 # -----------------------------
 DB_CONFIG = {
     "host": "localhost",
-    "user": "root",
-    "password": "Mysql@2005",
+    "user": "workbench",
+    "password": "StrongPW!123",
     "database": "team_project",  # change if needed
 }
 
@@ -279,7 +279,7 @@ def load_songs(song_csv, limit=20):
 # -----------------------------
 # LOAD MOVIES (tmdb_5000_movies.csv + tmdb_5000_credits.csv)
 # -----------------------------
-def load_movies(movies_csv, credits_csv, limit=20):
+def load_movies(movies_csv, credits_csv, limit=1000):
     movies_df = pd.read_csv(movies_csv, nrows=limit)
     # Handle BOM and encoding issues in credits CSV
     credits_df = pd.read_csv(credits_csv, encoding="utf-8-sig")
@@ -444,7 +444,7 @@ if __name__ == "__main__":
     RATINGS_CSV = "csvs/Ratings.csv"
 
     # How many rows of each to insert
-    N = 20
+    N = 30
 
     load_books(BOOKS_CSV, limit=N)
     load_songs(SONG_CSV, limit=N)
