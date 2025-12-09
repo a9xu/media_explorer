@@ -30,13 +30,34 @@
   </head>
   <body>
     <nav>
-      <a href="{{ url_for('index') }}">Home</a>
-      <a href="{{ url_for('list_movies') }}">Movies</a>
-      <a href="{{ url_for('list_tv_shows') }}">TV Shows</a>
-      <a href="{{ url_for('list_songs') }}">Songs</a>
-      <a href="{{ url_for('list_books') }}">Books</a>
+      <a href="{{ url_for('main.index') }}">Home</a>
+      <a href="{{ url_for('media.list_movies') }}">Movies</a>
+      <a href="{{ url_for('media.list_songs') }}">Songs</a>
+      <a href="{{ url_for('media.list_books') }}">Books</a>
+      {% if user %}
+      <span style="float: right">
+        <a href="{{ url_for('auth.profile') }}">Profile</a>
+        <a href="{{ url_for('auth.logout') }}">Logout</a>
+      </span>
+      {% else %}
+      <span style="float: right">
+        <a href="{{ url_for('auth.login') }}">Login</a>
+        <a href="{{ url_for('auth.register') }}">Register</a>
+      </span>
+      {% endif %}
     </nav>
     <hr />
-    {% block content %}{% endblock %}
+    {% with messages = get_flashed_messages(with_categories=true) %} {% if
+    messages %}
+    <div>
+      {% for category, message in messages %}
+      <p
+        style="padding: 10px; background: {% if category == 'error' %}#ffcccc{% elif category == 'success' %}#ccffcc{% elif category == 'warning' %}#ffffcc{% else %}#ccccff{% endif %};"
+      >
+        {{ message }}
+      </p>
+      {% endfor %}
+    </div>
+    {% endif %} {% endwith %} {% block content %}{% endblock %}
   </body>
 </html>

@@ -1,0 +1,32 @@
+{% extends "base.html" %} {% block content %}
+<h2>Audit Logs</h2>
+<p>View of all system actions performed by users.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>User</th>
+      <th>Action</th>
+      <th>Timestamp</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% if logs %} {% for log in logs %}
+    <tr>
+      <td>{{ log.id }}</td>
+      <td>{{ log.username }}</td>
+      <td>{{ log.action }}</td>
+      <td>{{ log.created_at }}</td>
+    </tr>
+    {% endfor %} {% else %}
+    <tr>
+      <td colspan="4">(No audit logs found)</td>
+    </tr>
+    {% endif %}
+  </tbody>
+</table>
+
+<p><a href="{{ url_for('auth.profile') }}">Back to Profile</a></p>
+{% endblock %}
+

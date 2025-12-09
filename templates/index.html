@@ -1,10 +1,17 @@
 {% extends "base.html" %} {% block content %}
 <h1>Ultimate Media Explorer</h1>
 <p>Simple Flask GUI for browsing and managing movies, books, and songs.</p>
+{% if user %}
+<p>Welcome, <strong>{{ user.username }}</strong>!</p>
+{% else %}
+<p>
+  Please <a href="{{ url_for('auth.login') }}">login</a> or
+  <a href="{{ url_for('auth.register') }}">register</a> to get started.
+</p>
+{% endif %}
 <ul>
-  <li><a href="{{ url_for('list_movies') }}">View Movies</a></li>
-  <li><a href="{{ url_for('list_tv_shows') }}">View TV Shows</a></li>
-  <li><a href="{{ url_for('list_songs') }}">View Songs</a></li>
-  <li><a href="{{ url_for('list_books') }}">View Books</a></li>
+  <li><a href="{{ url_for('media.list_movies') }}">View Movies</a></li>
+  <li><a href="{{ url_for('media.list_songs') }}">View Songs</a></li>
+  <li><a href="{{ url_for('media.list_books') }}">View Books</a></li>
 </ul>
 {% endblock %}

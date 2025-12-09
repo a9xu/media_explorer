@@ -1,0 +1,31 @@
+{% extends "base.html" %} {% block content %}
+<h2>Manage Genre Preferences</h2>
+<form method="POST">
+  <div>
+    <h3>Select your favorite genres:</h3>
+    {% for genre in genres %}
+    <div>
+      <input
+        type="checkbox"
+        id="genre_{{ genre.id }}"
+        name="genres"
+        value="{{ genre.id }}"
+        {%
+        if
+        genre.id
+        in
+        selected_genres
+        %}checked{%
+        endif
+        %}
+      />
+      <label for="genre_{{ genre.id }}">{{ genre.name }}</label>
+    </div>
+    {% endfor %}
+  </div>
+  <div>
+    <button type="submit">Save Preferences</button>
+    <a href="{{ url_for('auth.profile') }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

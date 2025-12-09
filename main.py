@@ -15,7 +15,6 @@ TABLES = [
     "authors",
     "albums",
     "movies",
-    "tv_shows",
     "songs",
     "books",
     "items",
